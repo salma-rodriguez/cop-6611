@@ -1,7 +1,31 @@
 \section{Introduction}
 
-Client-side block-level caching has been proven to relieve storage area network systems from load balancing and scalability issues\cite{DM-Cache}\cite{visa-dm-cache}. By using fast storage devices such as flash-based SSD devices as a local caching medium, clients can support better I/O performance compared to just using the storage system network. Despite the I/O performance benefits of a storage caching layer, reliability issues can arise if dirty data is not persisted to the storage backend frequently. On the one hand, write-back policies offer great performance benefits as they may take advantage of requests with temporal locality and reduce the load on the server. However, if the flushing of dirty data is postponed for too long, a client failure may result in cirtical data loss. Other policies such as write-through offer better reliability guarantees but discard any performance gains obtained from buffering writes. Our solution consists of a block-level caching system that implements cross-client cooperative caching and replication policies, to compromise reliability and I/O performance gains.
+Client-side block-level caching has been shown to relieve storage
+area network systems from load balancing and scalability issues
+\cite{DM-Cache}\cite{visa-dm-cache}. By using fast storage devices
+such as flash-based SSDs as a local caching medium, clients
+can support better I/O performance compared to using only the
+storage system network. Despite the I/O performance benefits of a
+storage caching layer, reliability issues can arise if dirty data
+is not persisted to the storage back-end frequently. On the one
+hand, write-back policies offer great performance benefits as they
+may take advantage of requests with temporal locality and reduce
+the load on the server. However, if the flushing of dirty data is
+postponed for too long, a client failure may result in critical
+data loss. Other policies such as write-through offer better
+reliability guarantees but discard any performance gains obtained
+from buffering writes. Our solution consists of a block-level
+caching system that implements cross-client cooperative caching
+and replication policies, to compromise reliability and I/O
+performance gains.
 
-The remainder of this paper is organized as follows. In section~\ref{background} we provide background information on replication and cooperative caching. Section~\ref{approach} describes our proposed approach for establishing reliability using cooperative caching and replication. Finally, section~\ref{schedule} contains a brief schedule of the tasks that will take place to implement and test our cooperative caching and replication code. 
+The remainder of this paper is organized as follows.
+In section~\ref{background} we provide background information on
+replication and cooperative caching. Section~\ref{approach}
+describes our proposed approach for establishing reliability using
+cooperative caching and replication. Finally,
+section~\ref{schedule} contains a brief schedule of the tasks that
+will take place to implement and test our cooperative caching and
+replication code. 
 
 \label{intro}

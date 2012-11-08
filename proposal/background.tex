@@ -1,9 +1,71 @@
-\section{Background}
+\section{Background]
 
-Replication techniques for conflict resolution have been explored for distributed systems where multiple users require concurrent access to data on a single serve node, as well as increasing the availability of data by using optimistic replication\cite{Replication}.  Although previous research has focused on improving reliability, availability, and consistency on distributed or grid systems, reliability for client-based caching of storage server data has had little improvement.
+Replication techniques for distributed systems have been
+explored on many papers. Optimistic replication has been devised
+in order to increase the availability of data, while allowing
+concurrent access to data\cite{Replication}. Although
+previous research has focused on improving availability and
+consistency on distributed\cite{Replication} and grid computing
+systems\cite{Online-Grid}, reliability for distributed caching
+systems has had little improvement.
 
-\textit{Pessimistic replication} is a synchronous replication technique that guarantees a higher degree of consistency and reliability by blocking access to data until it can be verified that the data has been replicated across the network. However, pessimistic replication increases the variance in access time, since network behavior is highly unpredictable. In the case of DM-Cache, using pessimistic replication would result in higher latency when there are more clients cooperating as replica targets. The scalibility problem with pessimistic replication is shown in \cite{Replicated-Services}, as well as \cite{Replication-Cost}. The work of Saito and Shapiro on optimistic replication\cite{Replication} does not focus on reliability, but it shows how to achieve eventual consistency on distributed systems where access to data is possible from server-class machines that are distributed across different locations on a network. The nearest location is used to obtain a consistent copy of the data, while updates are sent to a master site in charge of replicating the data. Our focus for this paper is not to achieve eventual consistency, but we will use optimistic replication in order to maintain high availability and high throughput. The goal is to increase reliability by using cooperative caching and replication, without affecting performance and availability. Therefore, optimistic replication is the best choice for our approach.
+\textit{Pessimistic replication} is a synchronous replication
+technique that guarantees a higher degree of consistency and
+reliability by blocking access to data until it can be verified
+that the data has been replicated across the network. However,
+pessimistic replication increases the variability in access time,
+since network behavior is highly unpredictable. As a result,
+latency spikes are expected to occur more frequently. In the
+case of DM-Cache, using pessimistic replication would result in
+higher latency when there are more clients cooperating as
+replication targets. The scalability problem with pessimistic
+replication is shown in\cite{Replicated-Services}, as well as
+\cite{Replication-Cost}.
+ 
+The work of Saito and Shapiro on 
+optimistic replication\cite{Replication} shows how to achieve
+eventual consistency on distributed systems where access to data
+is possible from storage servers that are distributed across
+different locations on a geographic network. A consistent copy of
+the data is not always available, since data may be unavailable
+immediately after an update, or while updates are taking place.
+However, a mechanism is implemented to ensure eventual
+consistency.
 
-In \cite{Online-Grid}, replication schemes and their apact on system reliability are explored. Two replica optimizers are compared and combined into a third to increase data availibility for files of different sizes. The paper by Lei et al. propose online optimization algorithms to replicate data based on a file weight. The weight depends on the popularity of the file, its availability, the number of copies, as well as its size. The weight is largely affected by the popularity of the file. The hotter the file, the higher the possibility of it being replicated. Availability improves by allowing files that are not popular to be replaced by replicated copies of more popular data. Although reliability improvements are not emphasized in the paper, it can be assumed that by making the data highly available, there is an increase in reliability. The paper motivated us to consider the number of replicas per client in our approach for improving reliability using cooperative caching with DM Cache.
+Our focus for this paper is not to achieve high
+availability, but we will use some of the ideas behind optimistic
+replication in order to maintain some availability. We will show
+how to increase reliability by using cooperative caching and
+replication. Therefore, we employ a technique that is similar to
+that used in \cite{dynamo}, where a fixed number of clients
+holding the replica are required to respond before proceeding with\
+subsequent operations. The number can be dynamically changed
+according to frequency of access, so that data that is written to
+more frequently mandates a higher number of responses for each
+replication operation.
+
+In\cite{Online-Grid}, replication schemes and their impact on
+system reliability are explored. Two replica optimizers are
+compared and combined into a third to increase data availability
+for files of different sizes. The paper by Lei et al. propose
+online optimization algorithms to replicate data based on a file
+weight. The weight depends on the popularity of the file, its
+availability, the number of copies, as well as its size. The
+weight is largely affected by the popularity of the file. The
+hotter the file, the higher the possibility of it being
+replicated. Availability improves by allowing files that are not
+popular to be replaced by replicated copies of more popular data.
+Although reliability improvements are not emphasized in the paper,
+it can be assumed that by making the data highly available, there
+is an increase in reliability. The paper motivated us to consider
+the number of replicas per client in our approach for improving
+reliability using cooperative caching with DM Cache.
+
+Consistent hashing has been explored in many works of research.
+By using a key-value approach, the hash function can be designed
+so that there is an upper bound to the number of keys that each
+node is responsible for. An advantage to using a circular hashing
+mechanism is that nodes can join or exit the network
+dynamically, and affect only the nearest successor\cite{chord}.
 
 \label{background}

@@ -3,14 +3,15 @@
 In our initial prototype, replicas will be distributed
 synchronously to ensure reliability. Our model comprises a
 block-level, distributed caching system where unwritten,
-unclean data is replicated across the caches of other
+dirty data is replicated across the caches of other
 clients in the system. We will use a cooperative caching
 protocol to make clients in the network aware of the cache
-capacity of their peers and utilize any available free storage
-to propagate replicas of dirty data. We would like to consider
-the tradeoff between free space and the degree of replication
-in our prototype, so that each client has a fair chance to
-replicate their data whenever there is an update.
+capacity of their peers and utilize any available free
+storage to propagate replicas of dirty data. We would like
+to consider the tradeoff between free space and the degree
+of replication in our prototype, so that each client has a
+fair chance to replicate their data whenever there is
+an update.
 
 % for later: how do clients know where each replica is stored?
 % hint: use an in-memory table, generate an unique key from
@@ -18,21 +19,51 @@ replicate their data whenever there is an update.
 
 \subsection{Design}
 
-In our design, a \textit{captured page} is a dirty page belonging to another client.
-Captured pages are pinned to avoid accidental swapping or deletion. The
-\textit{degree of replication} is equivalent to the number of captured pages in a
-client. A \textit{replication candidate} is a client with enough free space in its
-local cache to satisfy a replication request. Clients replicate data proactively in
-the background. Our asynchronous approach allows the data to be available immediately
-after propagation is initiated. Our algorithm considers the tradeoff between free
-space and the \textit{degree of replication} in each client in order to perform fair
-replication across clients, and ensure system-wide reliability. A kernel thread will
-run in the background for each client. The client with the original data with notify
-other clients via sockets when pages are flushed back to the disk. Once a flush notification
-is received by the client holding the read-only replica, the captured pages will simply be
-deleted from the cache. The benefit for choosing a replication candidate with enough free
-space is as follows: \[{benefit}=\frac{f_i}{r_i}\] where $f_i$ is the free space in node i,
-and $r_i$ is the degree of replication in node i.
+In our design, a \textit{captured page} is a dirty page
+belonging to another client. Captured pages are pinned to
+avoid accidental swapping or deletion. The
+\textit{degree of replication} is equivalent to the number
+of captured pages in a client. A
+\textit{replica target} is a client with enough
+free space in its local cache to satisfy
+a replication request. Clients replicate data proactively
+in the background. During propagation, write
+operations are queued until each replica reaches its
+replica target. A timeout is specified in order to
+avoid blocking the writes for too long. Timeout occurs
+whenever there is a failure.
+
+In our evaluation of reliability, we consider different
+approaches for handling a timeout due to failure, including
+power failure, node failure, disk failure or failure due to
+network partition. We analyze various design tradeoffs for
+failure handling, exploring whether or not writing back to
+a RAID on the storage server makes the system more reliable
+than having multiple replication attempts.
+
+Our algorithm considers the tradeoff between free
+space and the \textit{degree of replication} in each
+client in order to perform fair replication across clients,
+and ensure system-wide reliability. The benefit for
+choosing a replication candidate with enough free space is
+as follows: \[{benefit}=\frac{f_i}{r_i}\] where
+$f_i$ is the free space in node i, and $r_i$ is the degree
+of replication in node i.
+
+When loading our version of DM-Cache on a client machine, it
+will have the chance to specify a circle of peer clients to
+which it can propagate replicas. A \textit{circle} is a group
+of clients which have agreed to let another peer client use
+its free cache space. A client needs only the IP, the port,
+and the iSCSI identifier of all the clients that are part of
+the circle in order to connect to them. When a propagation
+request is activated, a client will send out a request to each
+client in its circle and it will wait for each client to
+respond with a notification, letting it know whether it has
+any space available in its cache. Once all the clients in the
+circle have responded, a subset of these will be chosen to
+receive a replica of the dirty data.
+
 
 Our cooperative caching mechanism will allow a client to specify its circle of
 clients only before loading DM-Cache on it. The reason for doing this in a
@@ -42,65 +73,70 @@ comparison to the baseline case. If time allows it, a best-case scenario
 implementation will result in a system allowing a client to join a network of
 cooperative clients without having to reload DM-Cache with a new circle of clients.
 
+
 \subsection{Implementation}
 
 The implementation of our prototype will use DM Cache,
 which is an existing block-level caching solution. We will
 modify it to incorporate our cooperative caching and
-replication mechanisms. The current implementation of DM-Cache
-exists as a Linux kernel module. It intercepts block
-I/O requests directed towards the main storage device, and
-redirects these towards a cache device. Information
-about redirected requests, such as source device to cache device
-block mappings, block status flags, and other related meta-data
-is kept in a special data structure. Our prototype will use
-DM-Cache, its block request mapping and its redirection mechanism
-as the foundation of the block-level cache management mechanism.
+replication mechanisms. The current implementation of
+DM-Cache exists as a Linux kernel module. It intercepts
+block I/O requests directed towards the main storage device,
+and redirects these towards a cache device. Information
+about redirected requests, such as source device to cache
+device block mappings, block status flags, and other
+related meta-data is kept in a special data structure. Our
+prototype will use DM-Cache, its block request mapping and
+its redirection mechanism as the foundation of
+the block-level cache management mechanism.
 
 By convention, iSCSI is used as the storage communication
 protocol for DM Cache. In the current setup of DM Cache,
-where clients work in a non-cooperative manner, the storage server
-functions as the iSCSI target, and the client machine functions as
-the iSCSI initiator. In other words, the client machine would only
-access the storage resources allocated to it in the server. In
-order to transfer blocks of data from client to client, the new
-system will require that all clients have access to the
-cache of their peers. Having communication established among
-peer clients, each client can then initiate replication processes
-or act as target for replicas.
+where clients work in a non-cooperative manner, the storage
+server functions as the iSCSI target, and the client machine
+functions as the iSCSI initiator. In other words, the client
+machine would only access the storage resources allocated to
+it in the server. In order to transfer blocks of data from
+client to client, the new system will require that all
+clients have access to the cache of their peers. Having
+communication established among peer clients, each client can
+then initiate replication processes or act as
+target for replicas.
 
 Our prototype will consist of a network of peer
-clients using kernel sockets, with TCP as their communication
-protocol. For our initial prototype, we use a set of static IP
-addresses. We initialize a kernel daemon that binds to a port
-and listens for incoming block I/O information. The daemon then
-generates a block I/O request from the given information and
-writes to the cache device directly, by-passing the I/O scheduler.
-We will also use an IP-based network solution, like iSCSI, to
-communicate with the backend storage server.
+clients using kernel sockets, and TCP as their communication
+protocol. For our initial prototype, we use a set of static
+IP addresses. We initialize a kernel daemon that binds to a
+port and listens for incoming block I/O information. The
+daemon then generates a block I/O request for every stream
+of data that is sent to it, and writes to the cache device
+directly, by-passing the I/O scheduler. We will also use an
+IP-based network solution, like iSCSI, to communicate with
+the backend storage server.
 
-In order to implement the cooperative caching mechanism we plan to
-use our customized version of the iSCSI initiator and target code.
-Current implementations of iSCSI initiator manage login and discovery
-of target functions in user space, and they use a kernel-space application
-to handle the data movement functions. For our initial prototype, the plan
-is to use only the data movement portion of the iSCSI initiator and target,
-and implement the login and discovery of peer client targets on the kernel
-side as a helper module to DM-Cache. The reason for this is that iSCSI is
-designed to allow the initiator machine to see and use the target machine
-as a local device. We do not want this functionality as it may allow the
-client to modify or corrupt a peer client's cache.
+After the replica has been written to the target cache,
+the target client will notify completion to the initiator.
+For removing pinned pages that will no longer be used, the
+client with the original data with notify other clients
+via a kernel socket when pages are flushed back to the disk.
+Once a flush notification is received by the client holding
+the read-only replica, the captured pages will simply be
+deleted from the cache. 
 
-When loading our version of DM-Cache on a client machine, it will have the
-chance to specify a circle of peer clients to which it can propagate replicas.
-A circle is basically a group of clients which have agreed to let another peer
-client use its free cache space. A client needs only the IP, the port, and the
-iSCSI identifier of all the clients that are part of the circle in order to
-connect to them. When a propagation request is activated, a client will send
-out a request to each client in its circle and it will wait for each client to
-respond with a notification, letting it know whether it has any space available
-in its cache. Once all the clients in the circle have responded, a subset of
-these will be chosen to receive a replica of the dirty data.
+% may not be important
+%%%%%%%%Current implementations of iSCSI initiator manage login and
+%%%%%%%%discovery of target functions in user space, and they use a
+%%%%%%%%kernel-space application to handle the data movement
+%%%%%%%%functions. For our initial prototype,
+%%%%%%%%the plan is to use only the data
+%%%%%%%%movement portion of the iSCSI initiator and target, and
+%%%%%%%%implement the login and discovery of peer client targets on the
+%%%%%%%%kernel side as a helper module to DM-Cache. The reason for this
+%%%%%%%%is that iSCSI is designed to allow the initiator machine to see
+%%%%%%%%and use the target machine as a local device. We do not want
+%%%%%%%%this functionality as it may allow the client
+%%%%%%%%to modify or corrupt a peer client's cache.
+
 
 In our approach we keep a time stamp of every replica. Every time an update request
 reaches a client with the replica of an original copy, the client will locate the

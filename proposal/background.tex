@@ -34,11 +34,11 @@ Our focus for this paper is not to achieve high
 availability, but we will use some of the ideas behind optimistic
 replication in order to maintain some availability. In all cases,
 it is not possible to make the system both highly available and
-highly reliable. To have good reliability there must be at least one
-consistent copy of the data after every update. Hence, reliability
-is directly proportional to the number of consistent replicas
-in a distributed caching system, where each client has access
-to its own data and the data of no other client.
+highly reliable. To have good reliability there must be a fixed
+number of consistent copies of the data after every update.
+Reliability is directly proportional to the number of consistent
+replicas in a distributed caching system, where each client has
+access to its own data and the data of no other client.
 
 We employ a technique that is similar to
 that used in \cite{dynamo}, where a fixed number of clients

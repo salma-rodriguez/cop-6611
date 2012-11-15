@@ -1,0 +1,78 @@
+\section{Evaluation}
+
+We will use two approaches for our evaluation. The first
+is a practical approach, where we will use one of the
+failure types introduced in section~\ref{approach} to evaluate
+the design for reliability. The failure type we will use is
+induced power failure, where power failure will purposely be
+induced simply with one or two replicas in the caching system.
+
+The second approach is a theoretical approach. Reliability is
+quantified as mean time to failure (MTTF). The time-dependent
+mean time between failure (MTBF) is given by the equation:
+
+\begin{equation}
+\theta = \frac{T}{N}
+\end{equation}
+
+where MTBF converges to MTTF as the number of failing devices
+approach the total number of devices in the system.
+In this equation,
+$T$ is the total time, aggregated for all the nodes, so that if
+there are $n$ nodes in the system and each performs I/O-bound
+activities on its locally attached SSD for time $t$, then the
+total time, $T$ is \[n\times{t}\]. In essence, the
+higher the number of replicas in the system, the lower the
+number of failing caches in proportion to $T$, and this is what
+we want to prove through statistical methods.
+
+Permitted that we have the hardware and time, we will use our
+statistical parameter
+
+\begin{equation}
+	\lambda = \frac{1}{\theta}
+\end{equation}
+
+against time
+to graphically determine the reliability curve for real life
+workloads. This curve is given by the following equation:
+
+\begin{equation}
+	f(t) = \lambda e^{-\lambda t}
+\end{equation}
+
+MTTF can be accurately determined by integrating (4) over time
+as follows:
+
+\begin{equation}
+	\frac{\int_0^\infty tf(t)dt}{\int_0^\infty f(t)d(t)}
+\end{equation}
+
+This, of course, then reduces to:
+
+\begin{equation}
+	\int_0^\infty tf(t)dt
+\end{equation}
+
+since $f(t)$ approaches 1 as $t$ approaches $\infty$. Finally,
+we can integrate $f(t)$ to generate a cummulative distribution
+function (CDF), as follows:
+
+\begin{equation}
+	\int_{t_0}^{t_1} \lambda e^{-\lambda t}dt
+\end{equation}
+
+but when $t_0$ is zero, this integral simply reduces to:
+
+\begin{equation}
+	F(t) = 1 - e^{-\lambda t_1}
+\end{equation}
+
+which we will use to calculate the probability of failure for
+$t < t_1$. The probability of failure for $t_1 > 1$ is given by
+
+\begin{equation}
+	R(t) = 1 - F(t)
+\end{equation}
+
+\label{evaluation}

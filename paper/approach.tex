@@ -30,49 +30,62 @@ a replication request. Clients replicate data proactively
 in the background. During propagation, write
 operations are queued until each replica reaches its
 replica target. A timeout is specified in order to
-avoid blocking the writes for too long. Timeout occurs
-whenever there is a failure.
+avoid blocking the writes for too long. The timeout, which
+indicates some sort of failure, is based on the network
+latency and can be adjusted depending on network traffic.
 
 In our evaluation of reliability, we consider different
-approaches for handling a timeout due to failure, including
-power failure, node failure, disk failure or failure due to
-network partition. We analyze various design tradeoffs for
-failure handling, exploring whether or not writing back to
-a RAID on the storage server makes the system more reliable
-than having multiple replication attempts.
+approaches for handling a timeout due to failure,
+including power failure, node failure, disk failure or
+failure due to network partition. We analyze various
+design tradeoffs for failure handling, exploring whether
+or not writing back to a RAID on the storage server makes
+the system more reliable than having multiple replication
+attempts.
 
-Our algorithm considers the tradeoff between free
+If time allows, our design will include a cache partitioning
+algorithm that considers the tradeoff between free
 space and the \textit{degree of replication} in each
 client in order to perform fair replication across clients,
 and ensure system-wide reliability. The benefit for
 choosing a replication candidate with enough free space is
-as follows: \[{benefit}=\frac{f_i}{r_i}\] where
-$f_i$ is the free space in node i, and $r_i$ is the degree
-of replication in node i.
+as follows:
 
-When loading our version of DM-Cache on a client machine, it
-will have the chance to specify a circle of peer clients to
-which it can propagate replicas. A \textit{circle} is a group
-of clients which have agreed to let another peer client use
-its free cache space. A client needs only the IP, the port,
-and the iSCSI identifier of all the clients that are part of
+\begin{equation}
+	benefit=\frac{f_i}{r_i}
+\end{equation}
+
+where $f_i$
+is the free space in node i, and $r_i$ is the degree
+of replication in node i. Dynamic network joins and exits
+will not be considered for this paper. Therefore, we will
+use a circle of peer clients for our initial prototype.
+We will also partition the cache of each client so that
+a small percentage is allocated to th replicas of its
+peers, leaving the implementation of an intelligent
+cache partitioning algorithm for future work.
+
+When loading our version of DM-Cache on a client machine,
+it will have the chance to specify a circle of peer clients
+to which it can propagate replicas. A \textit{circle} is a
+group of clients which have agreed to let another peer
+client use its free cache space. A client needs only the IP,
+and the port number of the clients that are part of
 the circle in order to connect to them. When a propagation
-request is activated, a client will send out a request to each
-client in its circle and it will wait for each client to
-respond with a notification, letting it know whether it has
-any space available in its cache. Once all the clients in the
-circle have responded, a subset of these will be chosen to
-receive a replica of the dirty data.
+request is activated, a client will send out a request to
+each client in its circle and it will wait for each client
+to respond with a notification, letting it know whether it
+has any space available in its cache. Once all the clients
+in the circle have responded, a subset of these will be
+chosen to receive a replica of the dirty data.
 
-
-Our cooperative caching mechanism will allow a client to specify its circle of
-clients only before loading DM-Cache on it. The reason for doing this in a
-static fashion rather than dynamic is because we first want to focus on creating
-a communication channel that is stable and that has acceptable performance in
-comparison to the baseline case. If time allows it, a best-case scenario
+The reason for replicating in astatic fashion rather than dynamic is
+because we first want to focus on creating
+a communication channel that is stable and that has acceptable performance
+in comparison to the baseline case. If time allows it, a best-case scenario
 implementation will result in a system allowing a client to join a network of
-cooperative clients without having to reload DM-Cache with a new circle of clients.
-
+cooperative clients without having to reload DM-Cache with a new circle of clients,
+as well as using the intelligent paritioning algorithm discussed earlier.
 
 \subsection{Implementation}
 
@@ -137,15 +150,11 @@ deleted from the cache.
 %%%%%%%%this functionality as it may allow the client
 %%%%%%%%to modify or corrupt a peer client's cache.
 
-
-In our approach we keep a time stamp of every replica. Every time an update request
-reaches a client with the replica of an original copy, the client will locate the
-replica in its local cache, and update the captured pages as well as the time stamp.
-Whenever a failure occurs, after bootup, the iSCSI kernel module will load the neighboring
+Whenever a failure occurs, after bootup, the kernel module will load the neighboring
 clients, and once block-level access is established for each client, the recovery process
-will begin. The iSCSI kernel module probes each of the neighboring clients for lost data
-that was not successfully written back to disk during the previous session, and once the
-data is found, it will be copied back to the local cache, and the read-only flags will be
-dropped from the reclaimed dirty pages.
+will begin, which will use a table with replication metadata. The kernel module retrieves lost data
+that was not successfully written back to disk during the previous session from each of the kernel modules, and once the
+data is found, it will be copied back to the local cache. The read-only flags will be
+dropped from the reclaimed dirty pages, and these pages will be invalidated from the neighboring caches.
 
 \label{approach}

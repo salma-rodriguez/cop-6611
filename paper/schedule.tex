@@ -1,25 +1,82 @@
 \section{Schedule}
-4. Schedule
-Phase 1 (September 30 - October 13)
-Start the implementation initial prototype:
- Jorge will work on setting up a simple communication mechanism that allows a single client to send block requests to client machine. The goal is to start working with a modified version of the iSCSI framework.
-Salma will work on the implementing the logic to replicate a portion of client's block on another machine in dm-cache.
-Phase 1 Presentation Slides ( October 10 ): Both Salma and Jorge put together a presentation of their project
-Phase 2 (October 13 - December 3)
-Expand the functionalities on the initial prototype:
-Jorge will add the functionality to the communication protocol to allow a single client to send requests to multiple client machines.
-Salma will work on adding the algorithm to trigger the propagation of a client’s dirty data to other client machines
-Phase 2 Report ( November 11 ): Both Salma and Jorge work on the putting together a report on their project's status 
-Work on finalizing customized iSCSI communication protocol:
-Jorge will work finalizing the code of the iSCSI which allows a clients to communicate to be both an initiator and a target for other clients
-Finalizing replication policy algorithm:
-Salma will work on adding logic to manage replicas belonging to different clients
-Testing final version of dm-cache: Both Salma and Jorge
-Put together the final version of the cooperative dm-cache
-Perform final tests on prototype
- Prepare demo for final presentation
-Final presentation (December 3 - December 16)
-Present the demo of cooperative dm-cache that replicates a client's data on peer client machines
-Write final report: - December 12
+
+Current Progress \\
+
+We have designed ways to replicate data and cooperate
+among clients. Implementation has begun, and we are still
+working on our prototype. Our current implementation
+includes ways to submit block I/Os to more than one
+device, and a working peer to peer communication protocol
+using TCP.
+
+Jorge is working on cache partitioning and replication.
+He is figuring out a way to submit block I/Os as a bio
+request to more than one device. He will also implement
+the partitioning algorithm that will be used to store
+replicas for peer caches.
+
+Salma is working on serialization of block I/Os
+which will be sent through TCP sockets across the
+network, and reconstructed by the receiving clients.
+Ways to deserialized block I/O data and submit these to
+the block layer queue for writing to the block device
+are still being implemented. \\
+
+\setlength{\parindent}{0cm}
+November 15 - 21 \\
+\setlength{\parindent}{1 em}
+
+Jorge will continue working on the replication policies.
+Salma will continue working on cooperative caching.
+Jorge needs to find a way to partition the cache, so that
+a portion of it is reserved for peer clients. He also
+needs to explore ways to pin the pages of peer caches, so
+that the data is not accidentally erased while unwritten
+dirty data is still hanging around, waiting to be written
+back to the storage server. Salma needs to find a way
+to serialize block I/O data structures, write these to a
+socket file discriptor, with the data being read, and
+deserialized from the target client. Salma will implement
+a way to construct the block I/O request and submit for
+writing to the device. The mechanism will include an
+acknowledgement with the sector number where the block of
+data was stored. \\
+
+\setlength{\parindent}{0cm}
+November 21 - 28 \\
+\setlength{\parindent}{1 em}
+
+A table with client metadata still needs to be
+implemented, so that information about replicas is kept in
+volatile memory and also reflected on persistent storage
+periodically. The implementation of replication will also
+include a way to mark the data as invalid in the replica
+targets when replicas have been written back to disk
+and are no longer needed. Salma will work on creating and
+persisting the metadata, and Jorge will implement a
+mechanism for invalidating replicas after every writeback.
+Both Jorge and Salma will be meeting with the professor
+and classmates for feedback and suggestions as the deadline
+approaches. \\
+
+\setlength{\parindent}{0cm}
+November 28 - 5 \\
+\setlength{\parindent}{1 em}
+
+Use feedback and suggestions to finish whatever is missing
+before December 1st, and from December 1st to the 5th,
+both Jorge and Salma will be preparing the presentation and
+the classroom demonstration. Both Jorge and Salma will add
+figures to their slides and add bibliographical refrences
+to improve the quality over their first presentation. \\
+
+\setlength{\parindent}{0cm}
+December 5 - 12 \\
+\setlength{\parindent}{1 em}
+
+Add whatever is missing to the paper from December 5 to 9.
+We realize that we need figures in our paper. These will be
+added along the way. Both Jorge and Salma will polish the
+paper before turning it in on December 12.
 
 \label{schedule}

@@ -1,0 +1,38 @@
+struct target_type cache_target
+
+cache_ctr
+cache_dtr
+cache_status
+
+cache_map
+
+bio_data_dir(struct bio* request) // determines direction of data (read or write)
+cache_lookup(cache_c dmc, sector_t request_block, *sector_t cache_block) // do cache lookup in radix tree
+
+do_io(struct kcached_job *job) // function I'll be working with a lot
+
+set_state // for bios; can set to INVALID, etc.
+clear_state 
+
+queue_work() // function to queue work for every job
+_kcached_wq: the single-threaded workqueue
+_kcached_work: the work_struct to be used
+
+io_callback() // function for asynchronous fetching of data
+
+keywords:
+
+key1, bio mapping in cache_map
+key2, do I/O: kcached_job processing
+key3, for do_work function
+key4, this is where forwarding is done
+
+Steps:
+1. Change number of blocks DM Cache has to work with. (challenge knocked out)
+2. Write schema for special job(s).
+3. Implement hash function used to locate bios in cache_c. block number is the key.
+4. Implement log and logging algorithm.
+
+Good, so you killed one small challenge, now you need:
+1. use new_kcached_job to create special job and queue_job to queue it
+2. Challenges 3 and 4

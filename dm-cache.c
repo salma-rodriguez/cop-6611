@@ -8,7 +8,8 @@
  *  Authors: Dr. Ming Zhao, Dulcardo Arteaga, Douglas Otstott, Stephen Bromfield
  *	     (dm-cache@googlegroups.com)
  *  Other contributors:
- *    Eric Van Hensbergen, Reng Zeng, Jesus Ramos (jesus-ramos@live.com)
+ *    Eric Van Hensbergen, Reng Zeng, Salma Rodriguez, Jesus Ramos
+ *    	(jesus-ramos@live.com)
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -37,6 +38,8 @@
 #include <linux/namei.h>
 #include <linux/pagemap.h>
 #include <linux/slab.h>
+#include <linux/kthread.h>
+
 #include <linux/spinlock.h>
 #include <linux/timer.h>
 #include <linux/workqueue.h>
@@ -44,7 +47,14 @@
 #include <asm/atomic.h>
 #include <asm/checksum.h>
 
+// for network programming in the kernel
+#include <linux/socket.h>
+#include <linux/net.h>
+#include <linux/in.h>
+
 #include "dm.h"
+
+#define MAX 100
 
 #define DMC_DEBUG 1
 //#define CONFIG_LFU
@@ -233,6 +243,95 @@ struct v_map *virtual_mapping;
 static int virtual_cache_map(struct bio *bio);
 static sector_t get_block_index(sector_t block, int disk);
 static void reboot_map (unsigned long ptr);
+
+struct task_struct *server_thread;
+struct task_struct *handler_threads[MAX];
+
+static struct kcached_job *new_kcached_job(struct cache_c *dmc, struct bio* bio,
+					sector_t request_block,
+					struct cacheblock *cache);
+
+void sock_zero(char *data) {
+	int k;
+	for (k = 0; k < sizeof(struct sockaddr_in); k++)
+		data[k] = 0;
+}
+
+int start_server(void) {
+	/* do some sanity check here */
+	server_thread = kthread_run(&server_worker, NULL, "k_server");
+}
+
+void stop_server(void) {
+	kthread_stop(&server_thread);	
+}
+
+int handler(void *data) {
+	struct bio *bio; /* initialize somehow */
+	struct cache_c *dmc;
+	unsigned int offset;
+	sector_t request_block;
+	struct kcached_job *job;
+	struct cacheblock *cache;
+
+	dmc = shared_cache;
+	cache = list_first_entry(dmc->lru, struct cacheblock, list);
+
+	// do mapping: need to map to blocks beyond logical cache
+
+	// offset = (unsigned int)(bio->bi_sector & dmc->block_mask);
+	request_block = bio->bi_sector - offset;
+
+	job = new_kcached_job(dmc, bio, request_block, cache);
+}
+
+int server_worker(void *data) {
+	int next;
+	unsigned short portno;
+	int sockrt, newsockrt, clilen;
+
+	struct socket *res, *cli;
+	struct sockaddr_in serv_addr, cli_addr;
+	
+	sockrt = sock_create(AF_INET, SOCK_STREAM, 0, &res);
+	printk("value of sockrt: %d\n", sockrt);
+
+	/* assume we can use port 8080 */
+	next = -1;
+	portno = 8080;
+	
+	sock_zero((char *)&serv_addr);
+
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_addr.s_addr = INADDR_ANY;
+	serv_addr.sin_port = htons(portno); /* returns 16-bit big endian */
+
+	clilen = sizeof(cli_addr);
+
+	if (kernel_bind(res, (struct sockaddr *) &serv_addr,
+				sizeof(serv_addr)) < 0)
+		DPRINTK("ERROR on binding");
+
+	if (kernel_listen(res, MAX) < 0)
+		DPRINTK("ERROR listening");
+
+	while (1) {
+		newsockrt = kernel_accept(res, &cli, 0);
+
+		if (newsockrt < 0)
+			error("ERROR on accept");
+
+		next = next - 100? 0: next++;
+		handler_threads[next] = kthread_run(&handler, NULL, "k_handler %d", next);
+
+		while (handler_threads[next++]->state < 1);
+		cli->ops->shutdown(cli, 0); /* may not work */
+		if (kthread_should_stop()) break;
+	} /* end of while */
+	
+	res->ops->shutdown(res, 0);
+	return;
+}
 
 static int dm_io_async_bvec(unsigned int num_regions, struct dm_io_region *where,
 			int rw, struct bio_vec *bvec, io_notify_fn fn, void *context)
@@ -721,6 +820,7 @@ static int do_store(struct kcached_job *job)
 	return r;
 }
 
+//key2
 static int do_io(struct kcached_job *job)
 {
 	int r = 0;
@@ -834,6 +934,7 @@ static int process_jobs(struct list_head *jobs,
 	return count;
 }
 
+//key3
 static void do_work(void *ignored)
 {
 	process_jobs(&_complete_jobs, do_complete);
@@ -1316,6 +1417,7 @@ static int cache_map(struct dm_target *ti, struct bio *bio,
 	int res=0;
 	int disk;
 
+	// key1
 	offset = bio->bi_sector & dmc->block_mask;
 	request_block = bio->bi_sector - offset;
 
@@ -1371,6 +1473,7 @@ static int cache_map(struct dm_target *ti, struct bio *bio,
 			return cache_miss(dmc, bio, disk);
 		}
 	}
+	//key4
 	// Forward to source device
 	bio->bi_bdev = virtual_mapping[disk].src_dev->bdev;
 
@@ -1616,25 +1719,21 @@ static int cache_ctr(struct dm_target *ti, unsigned int argc, char **argv)
 			ti->error = "dm-cache: Invalid block size";
 			r = -EINVAL;
 			goto bad6;
-		}
-		/* take portion of the cache to use for holding replicas */
-		dmc->block_size = dmc->block_size - dmc->block_size / 4;
-	} else {
-		dmc->block_size = DEFAULT_BLOCK_SIZE - DEFAULT_BLOCK_SIZE / 4;
-	}
+		}	
+	} else
+		dmc->block_size = DEFAULT_BLOCK_SIZE;
 	dmc->block_shift = ffs(dmc->block_size) - 1;
 	dmc->block_mask = dmc->block_size - 1;
-
+	
 	if (argc >= 5) {
 		if (sscanf(argv[4], "%llu", &cache_size) != 1) {
 			ti->error = "dm-cache: Invalid cache size";
 			r = -EINVAL;
 			goto bad6;
 		}
-		dmc->size = (sector_t) cache_size;
-	} else {
-		dmc->size = DEFAULT_CACHE_SIZE;
-	}
+		dmc->size = (sector_t) (cache_size - cache_size / 4);
+	} else
+		dmc->size = DEFAULT_CACHE_SIZE - DEFAULT_CACHE_SIZE / 4;
 	dmc->bits = ffs(dmc->size) - 1;
 
 	if (argc >= 6) {

@@ -1,0 +1,30 @@
+\section{Progress}
+%
+\begin{frame}
+    \frametitle{Progress}
+    \begin{block}{Current Modifications}
+	\begin{itemize}
+	    \item Added a mechanism for sending block I/Os to more
+		than two caches
+	    \item Added a device mapper parameter for choosing devices that
+		are shared through iSCSI, which DM Cache will use to replicate
+		data of local cache.
+	\end{itemize}
+    \end{block}
+    \begin{block}{Pending Modifications}
+    	\begin{itemize}
+		\item Still need to implement the mechanism for flushing
+		dirty blocks when the replicator and storage server disk are no longer available.
+		\item Need to implement recovery policy
+    	\end{itemize}
+    \end{block}
+    \begin{block}{Challenges}
+	How to prevent failure handling mechanism from corrupting data when flushing back to disk.
+    \end{block}
+\end{frame}
+\section{Demo}
+\begin{frame}
+    \frametitle{Demonstration}
+    \begin{center}And now for the demo.\end{center}
+\end{frame}
+

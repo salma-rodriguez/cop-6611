@@ -1,0 +1,20 @@
+\section{Evaluation}
+%
+\begin{frame}
+    \frametitle{Evaluation}
+    \begin{block}{Cases to Consider}
+	\begin{itemize}
+	    \item Server is not available
+	    \item Node with original data (replicator) is not available
+	    \item In both cases, the data is flushed back to the disk
+	\end{itemize}
+    \end{block}
+    \begin{block}{Evaluating Client}
+	To test client reliability, disconnect client node
+	and wait for data to be flushed back to the disk
+    \end{block}
+    \begin{block}{Evaluating Server}
+	To test server reliability, disconnect server node and reconnect.
+	Wait for blocks to be copied back and flushed by replicator.
+    \end{block}
+\end{frame}

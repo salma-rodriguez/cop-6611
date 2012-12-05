@@ -1,0 +1,49 @@
+\section{Implementation}
+%
+\begin{frame}
+    \frametitle{Framework}
+    \begin{itemize}
+	\item Modify an existing block-level caching solution
+	\item Use block request mapping and redirection mechanism
+	\item Add components for cooperative caching and replication
+	\item Add components to handle failure and recovery
+    \end{itemize}
+\end{frame}
+\begin{frame}
+    \frametitle{Failure \& Recovery}
+    \begin{itemize}
+	\item DM Cache keeps the source device in the bi bdev
+	    of each block I/O, with block addresses being mapped
+	    to the cache device
+	\item Need to partition the physical cache and set up
+	    each logical cache
+	\item Each logical cache maps block addresses from the
+	    source device independently
+	\item Already have source device. Need to flush data when
+	    replicator not available
+    \end{itemize}
+\end{frame}
+\begin{frame}
+    \frametitle{Policy for Failure Handling}
+    Assumption: all replicated copies are consistent. \\
+    \bf Algorithm 1 \rm Flushing the data back on failure. \\
+    \begin{algorithmic}[1]
+	\Procedure{Flush on Failure}{}
+	    \State $T\gets$ time specified by user
+	    \State $C\gets$ replicator cache
+	    \State $D\gets$ server disk
+	    \While{true}
+		\If{C and D available}
+		    sleep for $T$ seconds
+		\Else
+		    \If{C not available}
+			\State flush data back to source device
+		    \Else \Comment{D is not available}
+			\State keep data until server disk is available
+			\State flush data back to source device
+		    \EndIf
+		\EndIf
+	    \EndWhile
+	\EndProcedure
+    \end{algorithmic}   
+\end{frame}

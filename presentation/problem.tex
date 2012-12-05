@@ -1,0 +1,25 @@
+\section{Problem}
+%
+\begin{frame}
+    \frametitle{Problem Statement}
+    \begin{itemize}
+	\item Client-side caching: better I/O performance with
+	    write-back, but not very reliable
+	\item Client failure or cache device failure may result in
+	    critical data loss
+	\item Write-through offers better reliability guarantees
+	    but discards performance gains obtained from buffering
+	    writes on the client-side
+    \end{itemize}
+\end{frame}
+\begin{frame}
+    \frametitle{Proposed Approach}
+    \begin{itemize}
+	\item Increase reliability while reducing shared storage
+	    server load
+	\item Implement cross-client cooperative caching and
+	    replication policies
+	\item Replicate the dirty data of a client's cache
+	    to the caches of peer clients
+    \end{itemize}
+\end{frame}

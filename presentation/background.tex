@@ -1,0 +1,82 @@
+\section{Background}
+%
+\begin{frame}
+    \frametitle{Device Mapper Cache}
+    \begin{block}{What is it?}
+	A generic block-level caching mechanism
+	for storage networks
+    \end{block}
+    \vspace{2ex}
+    \begin{block}{What does it do?}
+	Cache popular data locally to reduce
+	network and storage server latency
+    \end{block}
+    \vspace{2ex}
+    \begin{block}{How does it work?}
+	Built upon the Linux kernel device mapper, which
+	maintains the mapping between a source device, and
+	a cache device.
+    \end{block}
+\end{frame}
+\begin{frame}
+    \frametitle{Device Mapper Cache}
+    \begin{tabular}{m{0.465\linewidth}m{0.465\linewidth}}
+	%\hline
+	DM Cache takes advantage of spatial and temporal
+	locality by caching data locally and using LRU for
+	cache replacement. &
+	\begin{figure}
+	    %\caption{Device Mapper Layout}
+	    \centering \includegraphics[scale=.23]{current.png}
+	    \label{fig:dm}
+	\end{figure} \\
+	%\hline
+    \end{tabular}
+    \begin{block}{Device Mapper Cache}
+	\begin{itemize}
+	    \item Distributed shared storage systems (SAN, iSCSI, AoE, \&c.)
+		support better scalibility by using block-level caching
+		on the client side
+	    \item Fast mass storage devices, like Solid State Drives (SSDs) 
+		are excellent candidates for cache devices
+	    \item While memory can
+		still support faster I/O, SSD caches provide greater capacity
+	\end{itemize}
+    \end{block}
+\end{frame}
+\begin{frame}
+    \frametitle{Replication}
+    One-to-many distribution of data from a \textit{source}
+    to several \textit{targets} to hold replicas of the data
+    \begin{block}{Pessimistic Replication}
+	\begin{itemize}
+	    \item synchronous
+	    \item consistent, but not optimal: system may incur
+		performance bottleneck from unpredictable network
+		and storage latency
+	    \item low availability: replicator will block until data is
+		fully propagated to all targets
+	\end{itemize}
+    \end{block}
+    \begin{block}{Optimistic Replication}
+	\begin{itemize}
+	    \item asynchronous
+	    \item high availability, low latency, not consistent
+	    \item less reliable than pessimistic replication
+	\end{itemize}
+    \end{block}
+\end{frame}
+\begin{frame}
+    \frametitle{Cooperative Caching}
+    \begin{block}{Idea}
+	Collaboration across a network in order to saturate
+	the available space for caching
+    \end{block}
+    \begin{block}{Implementation}
+	\begin{itemize}
+	    \item IP-based interface for devices to communicate (i.e., iSCSI)
+	    \item iSCSI works at the block layer. Only need a cache
+		partition for replicas
+	\end{itemize}
+    \end{block}
+\end{frame}

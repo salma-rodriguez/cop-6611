@@ -1,7 +1,6 @@
 #! /bin/bash
 
-# configure source & cache devices
-src='/dev/sdd1'
+# configure cache device
 cac='/dev/sdc'
 
 # dm-cache kernel object
@@ -18,8 +17,40 @@ tk="dm-cache.ko"
 # parm 9: cache associativity; doesn't matter what we put here
 # parm 10: enable write back
 
-vnm='node1' # name for virtual machine
+# name of virtual machines
+vnm1='node1' 
+vnm2='node2'
 
+function start {
 insmod $tk
-echo 0 8385898 cache $src $cac 0 8 1048237 1 1 $vnm | dmsetup create foodev
-mount /dev/mapper/foodev /media/dmmount
+echo 0 8387584 cache /dev/sdb1 $cac 0 8 1048576 1 1 $vnm1 | dmsetup create cache1
+mount /dev/mapper/cache1 /media/dmmnt1
+}
+
+function addc {
+echo 0 8387584 cache /dev/sdd1 $cac 0 8 1048576 1 1 $vnm2 | dmsetup create cache2
+mount /dev/mapper/cache2 /media/dmmnt2
+}
+
+function destroy {
+umount /dev/mapper/cache1 > /dev/null 2>&1
+umount /dev/mapper/cache2 > /dev/null 2>&1
+dmsetup remove /dev/mapper/cache1
+dmsetup remove /dev/mapper/cache2
+rmmod dm_cache > /dev/null 2>&1
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	addc)
+		addc
+		;;
+	stop)
+		destroy
+		;;
+	*)
+		echo "$) create/destroy"
+		;;
+esac

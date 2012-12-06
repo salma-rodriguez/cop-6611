@@ -20,27 +20,30 @@
 	\item Each logical cache maps block addresses from the
 	    source device independently
 	\item Already have source device. Need to flush data when
-	    replicator not available
+	    replicator is not available
+	\item Server maintains redundancy through RAID setup but
+	    may still keep data when not available and flush later
     \end{itemize}
 \end{frame}
 \begin{frame}
     \frametitle{Policy for Failure Handling}
-    Assumption: all replicated copies are consistent. \\
-    \bf Algorithm 1 \rm Flushing the data back on failure. \\
+    Assumption: not all replicas are consistent. \\
+    \bf Algorithm 1 \rm Flushing the data on failure. \\
     \begin{algorithmic}[1]
-	\Procedure{Flush on Failure}{}
-	    \State $T\gets$ time specified by user
-	    \State $C\gets$ replicator cache
+	\Procedure{Do Failover}{}
 	    \State $D\gets$ server disk
+	    \State $C\gets$ replicator cache
+	    \State $T\gets$ time specified by user
 	    \While{true}
 		\If{C and D available}
 		    sleep for $T$ seconds
-		\Else
-		    \If{C not available}
-			\State flush data back to source device
-		    \Else \Comment{D is not available}
-			\State keep data until server disk is available
-			\State flush data back to source device
+		    \Else \Comment{One of C or D are not available}
+			\State $V\gets$ list of bios (latest copy)
+			\If{D is not available}
+			    \State keep $V$ until server disk is available
+			    \State flush $V$ back to source device
+			\Else \Comment{C is not available}
+			    \State flush $V$ back to source device
 		    \EndIf
 		\EndIf
 	    \EndWhile

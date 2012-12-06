@@ -39,15 +39,15 @@
 		on the client side
 	    \item Fast mass storage devices, like Solid State Drives (SSDs) 
 		are excellent candidates for cache devices
-	    \item While memory can
-		still support faster I/O, SSD caches provide greater capacity
+	    \item While DRAM can increase throughput by
+		supporting more IOPS, SSD caches provide greater capacity
 	\end{itemize}
     \end{block}
 \end{frame}
 \begin{frame}
     \frametitle{Replication}
     One-to-many distribution of data from a \textit{source}
-    to several \textit{targets} to hold replicas of the data
+    to several \textit{targets} to hold replicas of original data
     \begin{block}{Pessimistic Replication}
 	\begin{itemize}
 	    \item synchronous
@@ -68,15 +68,20 @@
 \end{frame}
 \begin{frame}
     \frametitle{Cooperative Caching}
-    \begin{block}{Idea}
-	Collaboration across a network in order to saturate
-	the available space for caching
-    \end{block}
-    \begin{block}{Implementation}
-	\begin{itemize}
-	    \item IP-based interface for devices to communicate (i.e., iSCSI)
-	    \item iSCSI works at the block layer. Only need a cache
-		partition for replicas
+    \begin{block}{Basic Idea}
+    	\begin{itemize}
+	    \item Collaboration across a network in order to saturate
+		the space that is available for caching
+	    \item Use IP-based interface for cache devices to communicate
 	\end{itemize}
+    \end{block}
+    \begin{block}{Sub-optimal Implementation}
+	Use iSCSI. Works at the block layer. Only need a logical cache
+	partition to hold replicas.
+    \end{block}
+    \begin{block}{Better Implementation}
+	Have kernel modules interact at the block layer through TCP
+	protocol. iSCSI network interface adds unnecessary file system
+	indirection.
     \end{block}
 \end{frame}

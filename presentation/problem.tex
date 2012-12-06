@@ -2,24 +2,31 @@
 %
 \begin{frame}
     \frametitle{Problem Statement}
-    \begin{itemize}
-	\item Client-side caching: better I/O performance with
-	    write-back, but not very reliable
-	\item Client failure or cache device failure may result in
-	    critical data loss
-	\item Write-through offers better reliability guarantees
-	    but discards performance gains obtained from buffering
-	    writes on the client-side
-    \end{itemize}
+    \begin{block}{Facts to Consider}
+	\begin{itemize}
+	    \item Local caching: better I/O performance with
+		write-back policy, but no redundancy (not reliable)
+	    \item Write-through policy: better reliability guarantees
+		but lacks performance gains obtained from buffering
+		writes on a local cache
+	    \item Client failure or cache device failure may result in
+		critical data loss
+	\end{itemize}
+    \end{block}
+    \begin{block}{Question}
+	How can we improve reliability on the cloud while taking
+	advantage of the performance gains and energy efficiency
+	of write-back policies?
+    \end{block}
 \end{frame}
 \begin{frame}
     \frametitle{Proposed Approach}
     \begin{itemize}
-	\item Increase reliability while reducing shared storage
-	    server load
+	\item Want to increase reliability while maintaining a
+	    reduced load on the storage server
 	\item Implement cross-client cooperative caching and
 	    replication policies
-	\item Replicate the dirty data of a client's cache
-	    to the caches of peer clients
+	\item Replicate uncommitted data of a client cache
+	    to a logical partition of a peer cache
     \end{itemize}
 \end{frame}

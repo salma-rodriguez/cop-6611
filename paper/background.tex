@@ -3,9 +3,9 @@
 Replication techniques for distributed systems have been
 explored on many papers. Optimistic replication has been devised
 in order to increase availability, while allowing
-concurrent access to data\cite{Replication}. Although
+concurrent access to data \cite{Replication}. Although
 previous research has focused on improving availability on
-distributed\cite{globally-distributed} and grid computing
+distributed \cite{globally-distributed} and grid computing
 systems\cite{Online-Grid}, reliability for distributed caching
 systems has had little improvement.
 
@@ -23,7 +23,7 @@ replication is shown in \cite{Replicated-Services}, as well as
 \cite{Replication-Cost}.
 
 The work of Saito and Shapiro on 
-optimistic replication\cite{Replication} shows how to achieve
+optimistic replication \cite{Replication} shows how to achieve
 eventual consistency on distributed systems while making the
 data highly available across different locations on a geographic
 network. However, there is no warranty for reliability, since the
@@ -34,7 +34,7 @@ Our focus for this paper is not to achieve high
 availability, but we will use some of the ideas behind optimistic
 replication in order to maintain some availability. In all cases,
 it is not possible to make the system both highly available and
-highly reliable. To have good reliability there must be a fixed
+highly reliable. To have good reliability there must be a reasonable
 number of consistent copies of the data after every update.
 Reliability is directly proportional to the number of consistent
 replicas in a distributed caching system, where each client has
@@ -56,7 +56,7 @@ By using a key-value approach, the hash function can be designed
 so that there is an upper bound to the number of keys that each
 node is responsible for. An advantage to using a circular hashing
 mechanism is that nodes can join or exit the network
-dynamically, and affect only the nearest successor\cite{chord}.
+dynamically, and affect only the nearest successor \cite{chord}.
 If time allows it, we will explore consistent hashing and how
 it can improve reliability by giving each client a fair chance
 to replicate its content.

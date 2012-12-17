@@ -1,0 +1,53 @@
+\begin{thebibliography}{1}
+
+\bibitem{dynamo}
+{\sc DeCandia, G., Hastorun, D., Jampani, M., Kakulapati, G., Lakshman, A.,
+  Pitchin, A., Sivasubramanian, S., Vosshali, P., and Vogels, W.}
+\newblock {Dynamo: Amazon's Highly Available Key-value Store}.
+\newblock In {\em 18th Symposium on Operating Systems Principles\/} (2007).
+
+\bibitem{globally-distributed}
+{\sc Ford, D., Labelle, F., Popovici, F.~I., Stokely, M., Truong, V.-A.,
+  Barroso, L., Grimes, C., and Quinlan, S.}
+\newblock Availability in globally distributed storage systems.
+\newblock In {\em Proceedings of the 9th USENIX Symposium on Operating Systems
+  Design and Implementation\/} (2010).
+
+\bibitem{DM-Cache}
+{\sc Hensbergen, E.~V., and Zhao, M.}
+\newblock {Dynamic Policy Disk Caching for Storage Networking}.
+\newblock Tech. Rep. RC24123 (W0611-189), IBM Research, November 2006.
+
+\bibitem{Online-Grid}
+{\sc Lei, M., Vrbsky, S.~V., and Zijie, Q.}
+\newblock {Online Grid Replication Optimizers to Improve System Reliability}.
+\newblock In {\em Proceedings of the International Parallel and Distributed
+  Processing Symposium\/} (2007).
+
+\bibitem{Replication}
+{\sc Saito, Y., and Shapiro, M.}
+\newblock {Optimistic Replication}.
+\newblock {\em ACM Computing Surveys, Vol. 37, No.1\/} (2005).
+
+\bibitem{chord}
+{\sc Stoica, I., Morris, R., Karger, D., Kaashoek, M.~F., and Balakrishnan, H.}
+\newblock {Chord: A Scalable Peer-to-peer Lookup Service for Internet
+  Applications}.
+
+\bibitem{Replication-Cost}
+{\sc Yu, H., and Vahdat, A.}
+\newblock {Minimal Replication Cost for Availibility}.
+\newblock In {\em 21st Symposium on Principles of Distributed Computing\/}
+  (2001).
+
+\bibitem{Replicated-Services}
+{\sc Yu, H., and Vahdat, A.}
+\newblock {The Costs and Limits of Availability for Replicated Services}.
+\newblock In {\em 18th Symposium on Operating Systems Principles\/} (2001).
+
+\bibitem{visa-dm-cache}
+{\sc Zhao, M.}
+\newblock Visa research lab: dm-cache.
+\newblock Accessed September 29, 2012.
+
+\end{thebibliography}

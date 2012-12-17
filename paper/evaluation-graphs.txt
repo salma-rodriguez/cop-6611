@@ -1,95 +1,27 @@
 \section{Evaluation}
 
-We use two approaches for our evaluation. The first
-is a practical approach, where we use one of the
-failure types introduced in section~\ref{approach} to evaluate
-the design for reliability. The failure type we use is
-induced power failure, where power failure will purposely be
-induced simply with one or two replicas in the caching system.
-We also provide performance metrics for various replication
-approaches.
-
-The second approach uses statistical methods. Reliability is
-quantified as mean time to failure (MTTF). The time-dependent
-mean time between failure (MTBF) is given by the equation:
-
-\begin{equation}
-\theta = \frac{T}{N}
-\end{equation}
-
-where MTBF converges to MTTF as the number of failing devices
-approach the total number of devices in the system.
-In this equation,
-$T$ is the total time, aggregated for all the nodes, so that if
-there are $n$ nodes in the system and each performs I/O-bound
-activities on its locally attached SSD for time $t$, then the
-total time, $T$ is \[n\times{t}\] Our hypothesis is that with
-a higher number of replicas in the system, the
-number of failing caches in proportion to $T$ would be lower,
-and this is what we wanted to prove through statistical
-methods. Due to limitations, we were unable to
-proceed with a full reliability study. Therefore, our results
-are incomplete.
-
-Permitted that we have the hardware and time, our future work
-will make use of our statistical parameter \\
-\begin{equation}
-	\lambda = \frac{1}{\theta}
-\end{equation} \\
-plotted against time
-to graphically determine the reliability curve for real
-workloads. This curve is given by the following equation: \\
-\begin{equation}
-	f(t) = \lambda e^{-\lambda t}
-\end{equation} \\
-MTTF can be accurately determined by integrating (4) over time
-as follows: \\
-\begin{equation}
-	\frac{\int_0^\infty tf(t)dt}{\int_0^\infty f(t)d(t)}
-\end{equation} \\
-This, of course, then reduces to: \\
-\begin{equation}
-	\int_0^\infty tf(t)dt
-\end{equation} \\
-since $f(t)$ approaches 1 as $t$ approaches $\infty$. Finally,
-we can integrate $f(t)$ to generate a cummulative distribution
-function (CDF), as follows: \\
-\begin{equation}
-	F(t) = \int_{t_0}^{t_1} \lambda e^{-\lambda t}dt
-\end{equation} \\
-but when $t_0$ is zero, this integral simply reduces to: \\
-\begin{equation}
-	F(t) = 1 - e^{-\lambda t_1}
-\end{equation} \\
-which we will use to calculate the probability of failure for
-$t < t_1$. The probability of failure for $t_1 > 1$ is
-accurately given by
-
-\begin{equation}
-	R(t) = 1 - F(t)
-\end{equation}
-
 As part of the evaluation of our prototype, we measure the
 impact that the replication mechanism has on system. For 
 our baseline configuration we test the performance of the
 original version of dm-cache that uses a local SSD cache
 only. We compare this to overhead produced by two configurations
 of our versions of replicator-dmc. The first of these 
-configurations uses the synchrounous version of the dm\_io()
+configurations uses the synchrounous version of the dm_io()
 function. We decide to test this function since it performs
 writes to both the local and peer cache devices in a synchrounous
 manner, and thus it's more reliable, although at a performance cost.
 The other configuration that we test is the version of dm-cache 
-that uses the asynchronous version of the dm\_io() function. This
+that uses the asynchronous version of the dm_io() function. This
 function does not block so it has a chance to bundle I/O requests
 and provide better performance, however, at the risk of providing
 less reliability. 
 
-\begin{figure}[t]
-  \centering \includegraphics[width=\linewidth]{writes.png}
+n{figure*}[t]
+  \centering \includegraphics[width=\linewidth]{ writes.png}
   \caption{ Performance for write operations on three different dm-cache configurations }
   \label{fig:writes}
-\end{figure}
+\end{figure*}
+
 
 \subsection{Evaluation Setup}
 
@@ -124,8 +56,8 @@ each of the configurations.
 
 As we can see the results show that in comparison with baseline
 case, the configuration of dm-cache that uses the asynchronous
-dm\_io operation performs slower, a reduction in 40% in performance.
-As for the synchronous dm\_io function, the overhead in comparison
+dm_io operation performs slower, a reduction in 40% in performance.
+As for the synchronous dm_io function, the overhead in comparison
 to the original configuration results in a reduction in performance
 by up to 65%.
 
@@ -139,7 +71,7 @@ converted to an object which can be transferred across a TCP/IP
 connection, and then this object must be converted back to a bio
 which must be handled by the replica client. By finding another
 more optimal way to replicate data accross clients, this overhead
-could be reduced. For the synchronous dm\_io operations, the previous
+could be reduced. For the synchronous dm_io operations, the previous
 overhead still applies, but in addition, the slower throughoput
 is a direct result of the behavior of synchronous operations
 which will block until each request completes; one at a time.
@@ -149,5 +81,6 @@ are aware that running performance benchmarks in a virtualized
 environment is not a good representation of the real physical
 hardware. Nevertheless, we believe that a similar behavior wouldi
 be observed if our tests were run in physical hardware.
+
 
 \label{evaluation}
